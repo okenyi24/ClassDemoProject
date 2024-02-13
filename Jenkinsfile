@@ -1,48 +1,40 @@
 pipeline {
-    agent any
     tools {
         jdk 'myjava'
         maven 'mymaven'
     }
+    agent any
+
     stages {
         stage('Checkout') {
             steps {
-                echo 'Cloning..'
+                echo 'cloning..'
                 // Use withCredentials to provide GitHub credentials
                 withCredentials([usernamePassword(credentialsId: 'theitern', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
                     script {
                         // Clone the private GitHub repository using the provided credentials
-                        git 'https://github.com/theitern/DevOpsCodeDemo.git'
+                        git credentialsId: 'theitern', url: "https://github.com/theitern/DevOpsCodeDemo.git"
                     }
                 }
             }
         }
+
         stage('Compile') {
             steps {
-                echo 'Compiling..'
+                echo 'compiling..'
                 sh 'mvn compile'
             }
         }
+
         stage('CodeReview') {
             steps {
-                echo 'Code Review'
+                echo 'codeReview'
                 sh 'mvn pmd:pmd'
             }
         }
-        stage('UnitTest') {
+
+    stage('Package') {
             steps {
-                echo 'Testing'
-                sh 'mvn test'
-            }
-            post {
-                success {
-                    junit 'target/surefire-reports/*.xml'
-                }
-            }
-        }
-        stage('Package') {
-            steps {
-                echo 'Packaging..'
                 sh 'mvn package'
             }
         }
