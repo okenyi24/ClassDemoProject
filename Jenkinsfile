@@ -3,40 +3,64 @@ pipeline {
         jdk 'myjava'
         maven 'mymaven'
     }
+    
     agent any
-
+    
     stages {
         stage('Checkout') {
+            agent {
+                label 'master'
+            }
             steps {
-                echo 'cloning..'
-                // Use withCredentials to provide GitHub credentials
-                withCredentials([usernamePassword(credentialsId: 'theitern', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-                    script {
-                        // Clone the private GitHub repository using the provided credentials
-                        git credentialsId: 'theitern', url: "https://github.com/theitern/DevOpsCodeDemo.git"
-                    }
-                }
+                echo 'Cloning...'
+                git 'https://github.com/theitern/ClassDemoProject.git'
             }
         }
-
+        
         stage('Compile') {
+            agent {
+                label 'slave_1'
+            }
             steps {
-                echo 'compiling..'
+                echo 'Compiling...'
                 sh 'mvn compile'
             }
         }
-
+        
         stage('CodeReview') {
+            agent {
+                label 'slave_1'
+            }
             steps {
-                echo 'codeReview'
+                echo 'Code Review...'
                 sh 'mvn pmd:pmd'
             }
         }
-
-    stage('Package') {
+        
+        stage('UnitTest') {
+            agent {
+                label 'slave_2'
+            }
             steps {
+                echo 'Testing...'
+                sh 'mvn test'
+            }
+            post {
+                success {
+                    junit 'target/surefire-reports/*.xml'
+                }
+            }
+        }
+        
+        stage('Package') {
+            agent {
+                label 'master'
+            }
+            steps {
+                echo 'Packaging...'
                 sh 'mvn package'
             }
         }
     }
 }
+
