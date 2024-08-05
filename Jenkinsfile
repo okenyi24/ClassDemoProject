@@ -3,9 +3,7 @@ pipeline {
         jdk 'myjava'
         maven 'mymaven'
     }
-    
     agent any
-    
     stages {
         stage('Checkout') {
             agent {
@@ -13,10 +11,9 @@ pipeline {
             }
             steps {
                 echo 'Cloning...'
-                git 'https://github.com/theitern/ClassDemoProject.git'
+                git 'https://github.com/okenyi24/ClassDemoProject.git'
             }
         }
-        
         stage('Compile') {
             agent {
                 label 'slave-1'
@@ -26,7 +23,6 @@ pipeline {
                 sh 'mvn compile'
             }
         }
-        
         stage('CodeReview') {
             agent {
                 label 'slave-1'
@@ -36,10 +32,9 @@ pipeline {
                 sh 'mvn pmd:pmd'
             }
         }
-        
         stage('UnitTest') {
             agent {
-                label 'slave-2'
+                label 'slave-1'
             }
             steps {
                 echo 'Testing...'
@@ -51,7 +46,6 @@ pipeline {
                 }
             }
         }
-        
         stage('Package') {
             agent {
                 label 'master'
@@ -63,4 +57,3 @@ pipeline {
         }
     }
 }
-
